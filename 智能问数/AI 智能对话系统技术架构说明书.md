@@ -21,14 +21,14 @@
 
 ### 2.1 前端 (Frontend)
 
-|**模块**|**技术组件**|**选型理由**|
-|---|---|---|
-|**核心框架**|**Next.js 14+ (App Router)**|提供 SSR/CSR 混合渲染，优秀的流式数据 (Streaming) 支持。|
-|**开发语言**|**TypeScript**|强类型约束，保证前后端接口数据结构的一致性。|
-|**UI 组件库**|**Shadcn/UI + Tailwind CSS**|高度可定制的现代化组件，轻量且符合 ChatGPT 风格。|
-|**状态管理**|**React Hooks / Zustand**|处理流式数据的实时追加与 UI 状态同步。|
-|**Markdown 渲染**|**React Markdown**|支持 LaTeX 公式 (`remark-math`)、代码高亮 (`react-syntax-highlighter`)。|
-|**HTTP 客户端**|**Native Fetch / Axios**|配合 `TextDecoder` 处理 Server-Sent Events (SSE)。|
+| **模块**          | **技术组件**                     | **选型理由**                                                       |
+| --------------- | ---------------------------- | -------------------------------------------------------------- |
+| **核心框架**        | **Next.js 14+ (App Router)** | 提供 SSR/CSR 混合渲染，优秀的流式数据 (Streaming) 支持。                        |
+| **开发语言**        | **TypeScript**               | 强类型约束，保证前后端接口数据结构的一致性。                                         |
+| **UI 组件库**      | **Shadcn/UI + Tailwind CSS** | 高度可定制的现代化组件，轻量且符合 ChatGPT 风格。                                  |
+| **状态管理**        | **React Hooks / Zustand**    | 处理流式数据的实时追加与 UI 状态同步。                                          |
+| **Markdown 渲染** | **React Markdown**           | 支持 LaTeX 公式 (`remark-math`)、代码高亮 (`react-syntax-highlighter`)。 |
+| **HTTP 客户端**    | **Native Fetch / Axios**     | 配合 `TextDecoder` 处理 Server-Sent Events (SSE)。                  |
 
 ### 2.2 后端 (Backend)
 
