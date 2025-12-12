@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵犀问数产品定位核心逻辑图</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f4f6;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        .container {
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        canvas {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <canvas id="logicCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('logicCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configuration
+        const WIDTH = 1200;
+        const HEIGHT = 800; // Reduce height to remove excess bottom whitespace
+        const SCALE = 2; // For Retina displays
+
+        // Set actual size in memory (scaled to account for extra pixel density)
+        canvas.width = WIDTH * SCALE;
+        canvas.height = HEIGHT * SCALE;
+
+        // Normalize coordinate system to use css pixels
+        canvas.style.width = WIDTH + "px";
+        canvas.style.height = HEIGHT + "px";
+        ctx.scale(SCALE, SCALE);
+
+        // Colors
+        const COLORS = {
+            bg: '#ffffff',
+            text: '#1f2937',
+            textLight: '#6b7280',
+            line: '#e5e7eb',
+            left: { primary: '#0ea5e9', light: '#e0f2fe', border: '#7dd3fc' }, // Sky
+            middle: { primary: '#8b5cf6', light: '#ede9fe', border: '#c4b5fd' }, // Violet
+            right: { primary: '#10b981', light: '#d1fae5', border: '#6ee7b7' }, // Emerald
+            bottom: { primary: '#334155', light: '#cbd5e1', border: '#94a3b8' }, // Darker Slate
+            arrow: '#9ca3af'
+        };
+
+        // Components
+        const BOX_WIDTH = 280;
+        const BOX_HEIGHT = 320;
+        const GAP = 120; // Increased spacing for alignment
+        const START_X = (WIDTH - (3 * BOX_WIDTH + 2 * GAP)) / 2;
+        const START_Y = 220;
+
+        const data = [
+            {
+                title: "数据供给端 (Input)",
+                subtitle: "数据治理与资产平台",
+                desc: "提供高质量的元数据与标准",
+                color: COLORS.left,
+                items: ["数据标准 (Standards)", "技术/业务元数据", "数据血缘 (Lineage)", "数据权限 (Policy)"],
+                x: START_X,
+                y: START_Y
+            },
+            {
+                title: "核心引擎 (Core)",
+                subtitle: "灵犀问数「中间件」",
+                desc: "语义转换、推理与安全管控",
+                color: COLORS.middle,
+                items: ["语义建模 (MDL)", "Text-to-SQL", "RAG 增强检索", "语义级 RLS 管控"],
+                x: START_X + BOX_WIDTH + GAP,
+                y: START_Y
+            },
+            {
+                title: "应用消费端 (Output)",
+                subtitle: "智能体与业务场景",
+                desc: "数据价值释放与决策支撑",
+                color: COLORS.right,
+                items: ["经营驾驶舱 Copilot", "嵌入式业务助手", "智能分析报告", "治理反哺与辅助"],
+                x: START_X + (BOX_WIDTH + GAP) * 2,
+                y: START_Y
+            }
+        ];
+
+        function drawRoundedRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        // Main Draw Function
+        function draw() {
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+            // 1. Draw Connecting Arrows within Top Layer (Background layer)
+            drawFlowArrows();
+
+            // 2. Draw Bottom Infrastructure Layer
+            drawInfrastructureLayer();
+
+            // 3. Draw Vertical Integration Arrows
+            drawVerticalArrows();
+
+            // 4. Draw Main Boxes
+            data.forEach((box, index) => {
+                drawCard(box, index);
+            });
+
+            // 5. Draw Global Title
+            ctx.fillStyle = COLORS.text;
+            ctx.font = "bold 32px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("灵犀问数：产品定位与核心逻辑架构", WIDTH / 2, 60);
+
+            ctx.font = "18px sans-serif";
+            ctx.fillStyle = COLORS.textLight;
+            ctx.fillText("连接底层全域数据与上层智能应用的中间件", WIDTH / 2, 105);
+        }
+
+        function drawInfrastructureLayer() {
+            // Reduced gap from 100 to 60
+            const layerY = START_Y + BOX_HEIGHT + 60;
+            const layerHeight = 160;
+            // Strictly align width with the top elements (Remove extra padding)
+            const layerWidth = (BOX_WIDTH * 3) + (GAP * 2);
+            const layerX = START_X;
+
+            // Base container
+            ctx.save();
+            ctx.shadowColor = "rgba(0, 0, 0, 0.05)";
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 5;
+            ctx.fillStyle = "#ffffff";
+            drawRoundedRect(ctx, layerX, layerY, layerWidth, layerHeight, 16);
+            ctx.fill();
+            ctx.restore();
+
+            // Border
+            ctx.strokeStyle = COLORS.bottom.border;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Header
+            ctx.fillStyle = COLORS.bottom.light;
+            ctx.save();
+            // Clip top rounded corners
+            drawRoundedRect(ctx, layerX, layerY, layerWidth, layerHeight, 16);
+            ctx.clip();
+            ctx.fillRect(layerX, layerY, layerWidth, 50);
+            ctx.restore();
+
+            // Layer Title
+            ctx.textAlign = "center";
+            ctx.fillStyle = COLORS.text;
+            ctx.font = "bold 18px sans-serif";
+            ctx.fillText("底层数据基础设施 (Data Infrastructure)", layerX + layerWidth / 2, layerY + 32);
+
+            // Sub-blocks
+            const subBlockWidth = (layerWidth - 60) / 2;
+            const subBlockHeight = 80;
+            const subBlockY = layerY + 65;
+
+            // Block 1: Internal Structured
+            drawSubBlock(layerX + 20, subBlockY, subBlockWidth, subBlockHeight, "结构化数据 (Structured)", "业务数据库 | 数据仓库 | 数据湖");
+
+            // Block 2: Unstructured / External
+            drawSubBlock(layerX + 40 + subBlockWidth, subBlockY, subBlockWidth, subBlockHeight, "非结构化/外部数据 (Unstructured/External)", "文档知识库 | 行业研报 | 外部 API");
+        }
+
+        function drawSubBlock(x, y, w, h, title, content) {
+            ctx.fillStyle = "#e2e8f0"; // Slate-200
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            drawRoundedRect(ctx, x, y, w, h, 8);
+            ctx.fill();
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#475569';
+            ctx.font = "bold 14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(title, x + w / 2, y + 30);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = "14px sans-serif";
+            ctx.fillText(content, x + w / 2, y + 55);
+        }
+
+        function drawVerticalArrows() {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#cbd5e1';
+
+            // Reduced gap calculation matches drawInfrastructureLayer
+            const bottomY = START_Y + BOX_HEIGHT + 60; // Top of infrastructure layer
+            const topY = START_Y + BOX_HEIGHT + 10; // Bottom of main cards + margin
+
+            // Arrow 1: Infra -> Governance (Left)
+            // Metadata extraction flows UP
+            drawVerticalArrow(START_X + BOX_WIDTH / 2, bottomY, topY, "元数据抽取");
+
+            // Arrow 2: Infra -> Core (Middle)
+            // Query execution flows DOWN/UP
+            drawTwoWayArrow(START_X + BOX_WIDTH + GAP + BOX_WIDTH / 2, bottomY, topY, "SQL查询/执行");
+        }
+
+        function drawVerticalArrow(x, y1, y2, label) {
+            // Line
+            ctx.beginPath();
+            ctx.moveTo(x, y1);
+            ctx.lineTo(x, y2 + 10);
+            ctx.stroke();
+
+            // Arrowhead (Point UP at y2)
+            ctx.beginPath();
+            ctx.moveTo(x - 5, y2 + 10);
+            ctx.lineTo(x, y2);
+            ctx.lineTo(x + 5, y2 + 10);
+            ctx.fill();
+
+            // Label
+            ctx.textAlign = "left"; // Align left means text starts at x
+            ctx.fillStyle = '#94a3b8';
+            // Place text to the right of the arrow
+            ctx.fillText(label, x + 12, (y1 + y2) / 2 + 5);
+        }
+
+        function drawTwoWayArrow(x, y1, y2, label) {
+            ctx.beginPath();
+            ctx.moveTo(x, y1 - 10);
+            ctx.lineTo(x, y2 + 10);
+            ctx.stroke();
+
+            // Arrowhead UP
+            ctx.beginPath();
+            ctx.moveTo(x - 5, y2 + 10);
+            ctx.lineTo(x, y2);
+            ctx.lineTo(x + 5, y2 + 10);
+            ctx.fill();
+
+            // Arrowhead DOWN
+            ctx.beginPath();
+            ctx.moveTo(x - 5, y1 - 10);
+            ctx.lineTo(x, y1);
+            ctx.lineTo(x + 5, y1 - 10);
+            ctx.fill();
+
+            // Label
+            ctx.textAlign = "left";
+            ctx.fillStyle = '#94a3b8';
+            // Place text to the right of the arrow
+            ctx.fillText(label, x + 12, (y1 + y2) / 2 + 5);
+        }
+
+        function drawCard(box, index) {
+            const { x, y, color } = box;
+
+            // Shadow effect
+            ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 10;
+
+            // Card Background
+            ctx.fillStyle = "#ffffff";
+            drawRoundedRect(ctx, x, y, BOX_WIDTH, BOX_HEIGHT, 16);
+            ctx.fill();
+
+            // Remove shadow for inner elements
+            ctx.shadowColor = "transparent";
+
+            // Top Header Bar
+            ctx.fillStyle = color.light;
+            // Clip top rounded corners
+            ctx.save();
+            drawRoundedRect(ctx, x, y, BOX_WIDTH, BOX_HEIGHT, 16);
+            ctx.clip();
+            ctx.fillRect(x, y, BOX_WIDTH, 90);
+            ctx.restore();
+
+            // Border stroke (optional)
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = color.border;
+            drawRoundedRect(ctx, x, y, BOX_WIDTH, BOX_HEIGHT, 16);
+            ctx.stroke();
+
+            // Title
+            ctx.textAlign = "center";
+            ctx.fillStyle = color.primary;
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillText(box.title.toUpperCase(), x + BOX_WIDTH / 2, y + 30);
+
+            // Subtitle
+            ctx.fillStyle = COLORS.text;
+            ctx.font = "bold 20px sans-serif";
+            ctx.fillText(box.subtitle, x + BOX_WIDTH / 2, y + 60);
+
+            // Description
+            ctx.fillStyle = COLORS.textLight;
+            ctx.font = "14px sans-serif";
+            ctx.fillText(box.desc, x + BOX_WIDTH / 2, y + 115);
+
+            // Divider
+            ctx.beginPath();
+            ctx.moveTo(x + 30, y + 135);
+            ctx.lineTo(x + BOX_WIDTH - 30, y + 135);
+            ctx.strokeStyle = '#f3f4f6';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // List items
+            ctx.textAlign = "left";
+            box.items.forEach((item, i) => {
+                const itemY = y + 170 + (i * 35);
+                const itemX = x + 30;
+
+                // Bullet
+                ctx.fillStyle = color.primary;
+                ctx.beginPath();
+                ctx.arc(itemX, itemY - 5, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Text
+                ctx.fillStyle = COLORS.text;
+                ctx.font = "15px sans-serif";
+                ctx.fillText(item, itemX + 15, itemY);
+            });
+        }
+
+        function drawFlowArrows() {
+            ctx.lineWidth = 4;
+            ctx.lineCap = "round";
+
+            // Arrow 1: Left -> Middle
+            drawConnectArrow(
+                START_X + BOX_WIDTH,
+                START_Y + BOX_HEIGHT / 2,
+                START_X + BOX_WIDTH + GAP,
+                START_Y + BOX_HEIGHT / 2,
+                "元数据注入"
+            );
+
+            // Arrow 2: Middle -> Right
+            drawConnectArrow(
+                START_X + BOX_WIDTH * 2 + GAP,
+                START_Y + BOX_HEIGHT / 2,
+                START_X + (BOX_WIDTH + GAP) * 2,
+                START_Y + BOX_HEIGHT / 2,
+                "赋能与支撑"
+            );
+
+            // Top Feedback Loop: Right -> Left (Rectilinear)
+            drawFeedbackArrow();
+        }
+
+        function drawConnectArrow(x1, y1, x2, y2, label) {
+            const arrowSize = 10;
+
+            // Dashed Line
+            ctx.strokeStyle = COLORS.line;
+            ctx.setLineDash([0]);
+            ctx.strokeStyle = '#cbd5e1';
+
+            ctx.beginPath();
+            ctx.moveTo(x1 + 10, y1);
+            ctx.lineTo(x2 - 15, y2);
+            ctx.stroke();
+
+            // Arrowhead
+            ctx.fillStyle = '#cbd5e1';
+            ctx.beginPath();
+            ctx.moveTo(x2 - 15, y2 - arrowSize);
+            ctx.lineTo(x2 - 5, y2);
+            ctx.lineTo(x2 - 15, y2 + arrowSize);
+            ctx.fill();
+
+            // Label Background
+            ctx.fillStyle = '#f3f4f6'; // Match bg
+            const textWidth = ctx.measureText(label).width;
+            const midX = (x1 + x2) / 2;
+            ctx.fillRect(midX - textWidth / 2 - 5, y1 - 25, textWidth + 10, 20);
+
+            // Label
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = "bold 12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(label, midX, y1 - 10);
+        }
+
+        function drawFeedbackArrow() {
+            // Rectilinear (Polyline) ABOVE the boxes
+            const startX = START_X + (BOX_WIDTH + GAP) * 2 + BOX_WIDTH / 2; // Middle of Right Box
+            const startY = START_Y - 10;
+            const endX = START_X + BOX_WIDTH / 2; // Middle of Left Box
+            const endY = START_Y - 10;
+            const loopHeight = 50;
+            const loopY = START_Y - loopHeight; // Polyline height
+
+            ctx.strokeStyle = '#fca5a5'; // Light Red for Feedback
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round'; // Slightly rounded corner joints
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(startX, loopY); // UP
+            ctx.lineTo(endX, loopY);   // LEFT
+            ctx.lineTo(endX, endY);    // DOWN
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+
+            // Label for Feedback
+            ctx.fillStyle = '#fca5a5';
+            ctx.font = "bold 12px sans-serif";
+            ctx.textAlign = "center";
+            // Place label on the top horizontal segment
+            ctx.fillText("用管共生：应用反馈反哺治理", (startX + endX) / 2, loopY - 10);
+
+            // Arrowhead at end (Pointing Down at endX, endY)
+            ctx.fillStyle = '#fca5a5';
+            ctx.beginPath();
+            ctx.moveTo(endX - 5, endY - 10);
+            ctx.lineTo(endX, endY); // Tip
+            ctx.lineTo(endX + 5, endY - 10);
+            ctx.fill();
+        }
+
+        // Initial render
+        window.onload = draw;
+
+    </script>
+</body>
+
+</html>
