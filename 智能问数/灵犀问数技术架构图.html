@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵犀问数 - 系统技术架构图</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f6f9;
+            font-family: 'Inter', sans-serif;
+        }
+
+        canvas {
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="architectureCanvas" width="1150" height="850"></canvas>
+
+    <script>
+        const canvas = document.getElementById('architectureCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configuration
+        const colors = {
+            infra: { bg: '#E3F2FD', border: '#1565C0', text: '#0D47A1' },
+            core: { bg: '#E8F5E9', border: '#2E7D32', text: '#1B5E20' },
+            service: { bg: '#FFF3E0', border: '#EF6C00', text: '#E65100' },
+            frontend: { bg: '#F3E5F5', border: '#7B1FA2', text: '#4A148C' },
+            label: '#333333',
+            arrow: '#666666'
+        };
+
+        const layers = [
+            {
+                id: 'frontend',
+                title: '交互层 (Frontend)',
+                desc: '用户意图捕获、流式渲染、可视化展示',
+                components: [
+                    { name: 'Next.js 14+', desc: 'App Router 架构，支持 SSR 与流式渲染' },
+                    { name: 'Shadcn/UI', desc: '现代化、无障碍的 UI 组件系统' },
+                    { name: 'ECharts', desc: '交互式图表与数据可视化' },
+                    { name: 'Zustand', desc: '轻量级状态管理库' },
+                    { name: 'React-Markdown', desc: 'Markdown 与 LaTeX 数学公式渲染' }
+                ],
+                style: colors.frontend,
+                y: 100
+            },
+            {
+                id: 'service',
+                title: '编排层 (Service)',
+                desc: '鉴权、限流、模型统一适配、任务分发',
+                components: [
+                    { name: 'FastAPI', desc: '高性能异步 Python 后端框架' },
+                    { name: 'LiteLLM', desc: '统一大模型网关 (兼容 OpenAI 接口)' },
+                    { name: 'Context Manager', desc: '对话上下文与历史记录管理' },
+                    { name: 'Task Router', desc: '异步任务分发与队列管理' }
+                ],
+                style: colors.service,
+                y: 290
+            },
+            {
+                id: 'core',
+                title: '语义智能层 (Core)',
+                desc: '核心引擎: 元数据转语义模型、RAG 检索、SQL 生成',
+                components: [
+                    { name: 'Wren Engine', desc: '语义建模 (MDL) 与 Text-to-SQL 核心' },
+                    { name: 'Vanna.ai', desc: 'RAG 检索与 Schema 链接 (Schema Linking)' },
+                    { name: 'Qdrant', desc: '用于语义搜索的向量数据库' }
+                ],
+                style: colors.core,
+                y: 480
+            },
+            {
+                id: 'infra',
+                title: '基础设施层 (Infra)',
+                desc: '算力供给、模型推理、数据仓储',
+                components: [
+                    { name: 'vLLM', desc: '高吞吐大模型推理引擎' },
+                    { name: 'PostgreSQL', desc: '应用数据持久化存储' },
+                    { name: 'Trino', desc: '联邦 SQL 查询引擎' },
+                    { name: 'Qwen/DeepSeek', desc: '开源权重基础大模型' }
+                ],
+                style: colors.infra,
+                y: 670
+            }
+        ];
+
+        // Draw Title
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillStyle = '#1a1a1a';
+        ctx.textAlign = 'center';
+        ctx.fillText('灵犀问数 - 系统分层架构与组件详解', canvas.width / 2, 50);
+
+        // Helper function for rounded rect
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof stroke === 'undefined') { stroke = true; }
+            if (typeof radius === 'undefined') { radius = 5; }
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) { ctx.fill(); }
+            if (stroke) { ctx.stroke(); }
+        }
+
+        // Configuration
+        const layerWidth = 600;
+        const layerHeight = 150;
+        const xStart = 50; // Align to left
+        const detailXStart = xStart + layerWidth + 60; // Start of details section
+
+        layers.forEach((layer, index) => {
+            // --- 1. Draw Main Layer Box ---
+            ctx.fillStyle = layer.style.bg;
+            ctx.strokeStyle = layer.style.border;
+            ctx.lineWidth = 2;
+            roundRect(ctx, xStart, layer.y, layerWidth, layerHeight, 15, true, true);
+
+            // Layer Title
+            ctx.fillStyle = layer.style.text;
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(layer.title, xStart + 20, layer.y + 35);
+
+            // Layer Description
+            ctx.fillStyle = '#555';
+            ctx.font = 'italic 14px sans-serif';
+            ctx.fillText(layer.desc, xStart + 20, layer.y + 60);
+
+            // Separator Line inside box
+            ctx.beginPath();
+            ctx.moveTo(xStart + 20, layer.y + 75);
+            ctx.lineTo(xStart + layerWidth - 20, layer.y + 75);
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Render tech pills inside the main box (Simplified)
+            let currentX = xStart + 20;
+            const pillY = layer.y + 95;
+            ctx.font = '13px sans-serif';
+
+            // We only show names in pills here
+            layer.components.forEach(comp => {
+                const textWidth = ctx.measureText(comp.name).width;
+                const pillWidth = textWidth + 20;
+
+                // Draw Pill
+                ctx.fillStyle = '#fff';
+                ctx.strokeStyle = layer.style.border;
+                ctx.lineWidth = 1;
+                roundRect(ctx, currentX, pillY, pillWidth, 28, 14, true, true);
+
+                // Text
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center';
+                ctx.fillText(comp.name, currentX + pillWidth / 2, pillY + 19);
+
+                currentX += pillWidth + 8;
+            });
+
+
+            // --- 2. Draw Component Details on the Right ---
+
+            // List details
+            let detailY = layer.y + 10;
+            const detailRowHeight = 32;
+
+            ctx.textAlign = 'left';
+
+            layer.components.forEach(comp => {
+                // Bullet or small icon
+                ctx.fillStyle = layer.style.text;
+                ctx.beginPath();
+                ctx.arc(detailXStart, detailY, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Name (Bold)
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#333';
+                ctx.fillText(comp.name + ':', detailXStart + 15, detailY + 5);
+
+                // Description
+                const nameWidth = ctx.measureText(comp.name + ':').width;
+                ctx.font = '14px sans-serif';
+                ctx.fillStyle = '#666';
+                ctx.fillText(comp.desc, detailXStart + 15 + nameWidth + 10, detailY + 5);
+
+                detailY += detailRowHeight;
+            });
+        });
+
+        // --- 3. Draw Vertical Separator Line ---
+        const separatorX = xStart + layerWidth + 30;
+        const separatorTopY = 80;
+        const separatorBottomY = 820;
+
+        ctx.beginPath();
+        ctx.moveTo(separatorX, separatorTopY);
+        ctx.lineTo(separatorX, separatorBottomY);
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 8]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // --- 4. Draw Connecting Arrows (Vertical) inside Main Diagram ---
+        ctx.strokeStyle = '#999';
+        ctx.fillStyle = '#999';
+        ctx.lineWidth = 2;
+        const arrowX = xStart + layerWidth / 2;
+
+        for (let i = 0; i < layers.length - 1; i++) {
+            const upperBottomY = layers[i].y + layerHeight;
+            const lowerTopY = layers[i + 1].y;
+
+            ctx.beginPath();
+            ctx.moveTo(arrowX, lowerTopY);
+            ctx.lineTo(arrowX, upperBottomY + 5);
+            ctx.stroke();
+
+            // Arrowhead
+            ctx.beginPath();
+            ctx.moveTo(arrowX - 6, upperBottomY + 10);
+            ctx.lineTo(arrowX, upperBottomY);
+            ctx.lineTo(arrowX + 6, upperBottomY + 10);
+            ctx.fill();
+        }
+
+    </script>
+</body>
+
+</html>

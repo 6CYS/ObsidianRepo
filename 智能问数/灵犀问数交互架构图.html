@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵犀问数 - 前后端交互架构图</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f6f9;
+            font-family: 'Inter', sans-serif;
+        }
+
+        canvas {
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="interactionCanvas" width="1000" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('interactionCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Colors
+        const FE_BG = '#E3F2FD';
+        const FE_BORDER = '#2196F3';
+        const FE_TITLE = '#0D47A1';
+
+        const BE_BG = '#E8F5E9';
+        const BE_BORDER = '#4CAF50';
+        const BE_TITLE = '#1B5E20';
+
+        const DB_BG = '#FFF3E0';
+        const DB_BORDER = '#FF9800';
+
+        // Helper function for rounded rect
+        function roundRect(ctx, x, y, width, height, radius, fillStyle, strokeStyle) {
+            if (typeof radius === 'undefined') radius = 5;
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+
+            if (fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            if (strokeStyle) {
+                ctx.strokeStyle = strokeStyle;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        // Helper for Drawing Components
+        function drawComponent(ctx, x, y, w, h, text, subtext, bgColor) {
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+
+            roundRect(ctx, x, y, w, h, 8, bgColor || '#FFFFFF', '#ddd');
+
+            ctx.shadowColor = 'transparent';
+
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText(text, x + w / 2, y + 25);
+
+            if (subtext) {
+                ctx.fillStyle = '#666';
+                ctx.font = '11px sans-serif';
+                ctx.fillText(subtext, x + w / 2, y + 45);
+            }
+        }
+
+        // Draw Title
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillStyle = '#1a1a1a';
+        ctx.textAlign = 'center';
+        ctx.fillText('灵犀问数 - 前后端交互与数据流架构', canvas.width / 2, 40);
+
+        // --- MAIN CONTAINERS ---
+
+        // Frontend Container (Left)
+        roundRect(ctx, 30, 80, 400, 450, 15, FE_BG, FE_BORDER);
+        ctx.fillStyle = FE_TITLE;
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Frontend (交互层)', 50, 110);
+
+        // Backend Container (Right)
+        roundRect(ctx, 570, 80, 400, 450, 15, BE_BG, BE_BORDER);
+        ctx.fillStyle = BE_TITLE;
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText('Backend (服务与智能层)', 590, 110);
+
+        // --- FRONTEND COMPONENTS ---
+
+        // Chat Interface
+        drawComponent(ctx, 60, 140, 340, 70, 'ChatInterface', 'SSE流式接收 / 消息状态管理');
+
+        // Visualizers
+        drawComponent(ctx, 60, 240, 150, 60, 'ThinkingBubble', '思维链可视化 (<think>)');
+        drawComponent(ctx, 250, 240, 150, 60, 'ECharts / Table', '图表与数据渲染');
+
+        // Utils
+        drawComponent(ctx, 60, 340, 340, 50, 'Request/Response Handler', 'Axios / EventSource / Markdown解析');
+
+
+        // --- BACKEND COMPONENTS ---
+
+        // API Gateway
+        drawComponent(ctx, 600, 140, 340, 60, 'FastAPI (API Gateway)', '路由分发 / 鉴权 / SSE推送');
+
+        // Core Logic
+        drawComponent(ctx, 600, 230, 160, 80, 'Wren Engine', 'Text-to-SQL\n语义建模 (MDL)');
+        drawComponent(ctx, 780, 230, 160, 80, 'Vanna.ai (RAG)', '非结构化检索\nSchema Linking');
+
+        // LLM Gateway
+        drawComponent(ctx, 600, 340, 340, 50, 'LiteLLM (Model Gateway)', '统一模型接口 / 负载均衡');
+
+        // Data & Models (Bottom)
+        roundRect(ctx, 600, 420, 100, 80, 10, DB_BG, DB_BORDER); // DB
+        ctx.fillStyle = '#E65100';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('Business DB', 650, 450);
+        ctx.font = '11px sans-serif';
+        ctx.fillText('(Trino/PG)', 650, 470);
+
+        roundRect(ctx, 720, 420, 100, 80, 10, '#E1BEE7', '#8E24AA'); // Vector
+        ctx.fillStyle = '#4A148C';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('Vector DB', 770, 450);
+        ctx.fillText('(Qdrant)', 770, 470);
+
+        roundRect(ctx, 840, 420, 100, 80, 10, '#CFD8DC', '#455A64'); // Models
+        ctx.fillStyle = '#263238';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('vLLM / LLM', 890, 450);
+        ctx.fillText('(Qwen/DeepSeek)', 890, 470);
+
+
+        // --- ARROWS & FLOWS ---
+
+        function drawArrow(ctx, x1, y1, x2, y2, label, color) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color || '#555';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Arrowhead
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 10 * Math.cos(angle - Math.PI / 6), y2 - 10 * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(x2 - 10 * Math.cos(angle + Math.PI / 6), y2 - 10 * Math.sin(angle + Math.PI / 6));
+            ctx.fill();
+
+            // Label
+            if (label) {
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+                ctx.fillStyle = '#fff';
+                const width = ctx.measureText(label).width + 10;
+                ctx.fillRect(midX - width / 2, midY - 10, width, 20);
+
+                ctx.fillStyle = color || '#333';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, midX, midY + 4);
+            }
+        }
+
+        // 1. User Questions -> API
+        drawArrow(ctx, 430, 160, 570, 160, '1. Question', '#1976D2');
+
+        // 2. Gateway -> Core (Logic)
+        drawArrow(ctx, 770, 200, 770, 230, '', '#555');
+        drawArrow(ctx, 680, 200, 680, 230, '', '#555');
+
+        // 3. Core -> Models & Data
+        drawArrow(ctx, 680, 310, 680, 340, '', '#555'); // to LiteLLM
+        drawArrow(ctx, 860, 310, 860, 340, '', '#555'); // Vanna to LiteLLM (Optional path) or direct
+
+        drawArrow(ctx, 770, 390, 890, 420, 'Inference', '#555'); // LLM Call
+
+        // RAG/Data Fetch
+        drawArrow(ctx, 650, 310, 650, 420, 'SQL Exec', '#F57C00');
+        drawArrow(ctx, 860, 310, 770, 420, 'Retrieve', '#7B1FA2');
+
+        // 4. Response SSE
+        drawArrow(ctx, 570, 180, 430, 180, '2. SSE Stream', '#388E3C');
+
+        // Frontend internal
+        drawArrow(ctx, 230, 340, 230, 210, 'Render', '#999');
+
+
+    </script>
+</body>
+
+</html>
